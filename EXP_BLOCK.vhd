@@ -54,7 +54,7 @@ BEGIN
 				if instr = "10" then
 					arg1 := arg1 + arg2;
 					data(7 downto 4) := std_logic_vector(to_signed(arg1, 4));
-				elsif instr = "11" then
+				elsif instr = "01" then
 					arg1 := arg1 * arg2;
 					data(7 downto 4) := std_logic_vector(to_signed(arg1, 4));
 				end if;

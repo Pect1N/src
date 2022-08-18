@@ -26,7 +26,7 @@ BEGIN
             end loop;
         ELSIF (rising_edge(clk)) THEN
             index := to_integer(unsigned(read_mem(3 downto 0)));
-            mem_out <= std_logic_vector(to_signed(data_mem(index), mem_out'length));
+            mem_out <= std_logic_vector(to_unsigned(data_mem(index), mem_out'length));
         END IF;
     END PROCESS; -- main
 END rtl; -- rtl

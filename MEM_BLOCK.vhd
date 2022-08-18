@@ -31,8 +31,20 @@ ARCHITECTURE rtl OF MEM_BLOCK IS
 		);
 	END component MEMORY;
 
+	COMPONENT REGISTERS IS
+		PORT (
+            clk : IN STD_LOGIC;
+            rst : IN STD_LOGIC;
+            read_mem : IN STD_LOGIC_VECTOR(7 DOWNTO 0); -- element adres (read)
+            mem_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0) -- element value (read)
+		);
+	END component REGISTERS;
+
     signal result : STD_LOGIC_VECTOR(3 DOWNTO 0);
     signal adres : STD_LOGIC_VECTOR(3 DOWNTO 0);
+    
+    signal result_regs : STD_LOGIC_VECTOR(7 DOWNTO 0);
+    signal adres_regs : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
 BEGIN
 	myMEMORY : MEMORY port map (
@@ -40,6 +52,13 @@ BEGIN
         rst => rst,
         read_mem => adres,
         mem_out => result
+    );
+
+    myREGISTERS : REGISTERS port map (
+        clk => clk,
+        rst => rst,
+        read_mem => adres_regs,
+        mem_out => result_regs
     );
 
 	mem_main : PROCESS (clk, rst)
@@ -67,13 +86,13 @@ BEGIN
                 data := data_in;--forming write data
 				sub_data := sub_data_in;
                 adres <= data(7 downto 4);
+                adres_regs <= data;
                 if sub_data = "10" OR sub_data = "01" then -- Load and Store
                     load_adr <= data(3 downto 0);
                     data(7 downto 4) := result;
                 else -- Expression
                     load_adr <= data(7 downto 4);
-                    data(7 downto 4) := result;
-                    data(3 downto 0) := result;
+                    data := result_regs;
                 end if;
             END IF;
             
