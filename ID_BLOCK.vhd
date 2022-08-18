@@ -47,10 +47,10 @@ BEGIN
                 instr := instruction_in;
                 
                 -- Load
-                if instr = "00" then
+                if instr = "11" then
                     sub_data := "10";
                 -- Store
-                elsif instr = "01" then
+                elsif instr = "00" then
                     sub_data := "01";
                 -- Math
                 else
