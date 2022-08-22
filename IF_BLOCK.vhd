@@ -24,26 +24,29 @@ BEGIN
         VARIABLE valid_map : STD_LOGIC;
         VARIABLE ready_map : STD_LOGIC;
         VARIABLE data : STD_LOGIC_VECTOR(9 DOWNTO 0);
+        variable ready : std_logic;
     BEGIN
         IF (rst = '1') THEN
+            ready := '0';
             valid_w <= '0';
             ready_w <= '1';
             instruction <= (OTHERS => '1');
-            data_out <= (OTHERS => '0');
             data := (OTHERS => '0');
             valid_map := '0';
             ready_map := '1';
         ELSIF (rising_edge(clk)) THEN
             IF valid_map = '1' AND ready_r = '1' THEN
                 valid_map := '0';
+                ready := '0';
             END IF;
 
-            IF valid_r = '1' AND ready_map = '1' THEN
+            IF valid_r = '1' AND ready_map = '1' and ready = '0' THEN
                 ready_map := '0';
+                ready := '1';
                 data := data_in;--forming write data
             END IF;
             
-            IF valid_map = '0' AND ready_r = '1' THEN
+            IF valid_map = '0' AND ready_r = '1' and ready = '1' THEN
                 instruction <= data(9 downto 8);
                 data_out <= data(7 downto 0);
                 valid_map := '1';

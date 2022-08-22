@@ -25,7 +25,7 @@ ARCHITECTURE rtl OF EXP_BLOCK IS
 
 BEGIN
 	exp_main : PROCESS (clk, rst)
-
+		variable ready : std_logic;
 		VARIABLE valid_map : STD_LOGIC;
 		VARIABLE ready_map : STD_LOGIC;
 		VARIABLE data : STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -34,19 +34,21 @@ BEGIN
 		VARIABLE arg2 : INTEGER;
 	BEGIN
 		IF (rst = '1') THEN
+			ready := '0';
             valid_w <= '0';
             ready_w <= '1';
-            data_out <= (OTHERS => '0');
             data := (OTHERS => '0');
             valid_map := '0';
             ready_map := '1';
 		ELSIF (rising_edge(clk)) THEN
 			IF valid_map = '1' AND ready_r = '1' THEN
 				valid_map := '0';
+				ready := '0';
 			END IF;
 
-			IF ready_map = '1' AND valid_r = '1' THEN
+			IF ready_map = '1' AND valid_r = '1' and ready = '0' THEN
 				ready_map := '0';
+				ready := '1';
 				data := data_in;--forming write data
 				instr := instruction_in;
 				arg1 := to_integer(unsigned(data(7 downto 4)));
@@ -60,7 +62,7 @@ BEGIN
 				end if;
 			END IF;
 
-			IF valid_map = '0' THEN
+			IF valid_map = '0' AND ready_r = '1' and ready = '1' THEN
 				sub_data_out <= sub_data_in;
 				load_adr_out <= load_adr_in;
 				data_out <= data;

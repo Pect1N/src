@@ -28,24 +28,27 @@ BEGIN
         VARIABLE data : STD_LOGIC_VECTOR(7 DOWNTO 0);
         variable instr : STD_LOGIC_VECTOR(1 DOWNTO 0);
         variable sub_data : STD_LOGIC_VECTOR(1 DOWNTO 0); -- 0 - regs 1 - memory
+        variable ready : std_logic;
+
     BEGIN
         IF (rst = '1') THEN
+            ready := '0';
             valid_w <= '0';
             ready_w <= '1';
-            data_out <= (OTHERS => '0');
             data := (OTHERS => '0');
             valid_map := '0';
             ready_map := '1';
         ELSIF (rising_edge(clk)) THEN
             IF valid_map = '1' AND ready_r = '1' THEN
                 valid_map := '0';
+                ready := '0';
             END IF;
 
-            IF valid_r = '1' AND ready_map = '1' THEN
+            IF valid_r = '1' AND ready_map = '1' and ready = '0' THEN
                 ready_map := '0';
+                ready := '1';
                 data := data_in;--forming write data
                 instr := instruction_in;
-                
                 -- Load
                 if instr = "11" then
                     sub_data := "10";
@@ -58,7 +61,7 @@ BEGIN
                 end if;
             END IF;
             
-            IF valid_map = '0' AND ready_r = '1' THEN
+            IF valid_map = '0' AND ready_r = '1' and ready = '1' THEN
                 instruction_out <= instr;
                 data_out <= data;
                 sub_data_out <= sub_data;
