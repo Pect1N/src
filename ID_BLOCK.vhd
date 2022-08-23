@@ -28,8 +28,8 @@ BEGIN
         VARIABLE data : STD_LOGIC_VECTOR(7 DOWNTO 0);
         variable instr : STD_LOGIC_VECTOR(1 DOWNTO 0);
         variable sub_data : STD_LOGIC_VECTOR(1 DOWNTO 0); -- 0 - regs 1 - memory
+        -- check flag
         variable ready : std_logic;
-
     BEGIN
         IF (rst = '1') THEN
             ready := '0';

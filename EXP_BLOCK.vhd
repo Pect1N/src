@@ -25,13 +25,14 @@ ARCHITECTURE rtl OF EXP_BLOCK IS
 
 BEGIN
 	exp_main : PROCESS (clk, rst)
-		variable ready : std_logic;
 		VARIABLE valid_map : STD_LOGIC;
 		VARIABLE ready_map : STD_LOGIC;
 		VARIABLE data : STD_LOGIC_VECTOR(7 DOWNTO 0);
 		VARIABLE instr : STD_LOGIC_VECTOR(1 DOWNTO 0);
 		VARIABLE arg1 : INTEGER;
 		VARIABLE arg2 : INTEGER;
+		-- check flag
+		variable ready : std_logic;
 	BEGIN
 		IF (rst = '1') THEN
 			ready := '0';

@@ -24,13 +24,14 @@ BEGIN
         VARIABLE valid_map : STD_LOGIC;
         VARIABLE ready_map : STD_LOGIC;
         VARIABLE data : STD_LOGIC_VECTOR(9 DOWNTO 0);
+        -- check flag
         variable ready : std_logic;
     BEGIN
         IF (rst = '1') THEN
             ready := '0';
             valid_w <= '0';
             ready_w <= '1';
-            instruction <= (OTHERS => '1');
+            --instruction <= (OTHERS => '1');
             data := (OTHERS => '0');
             valid_map := '0';
             ready_map := '1';

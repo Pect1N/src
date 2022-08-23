@@ -26,7 +26,7 @@ BEGIN
         IF (rst = '1') THEN
             ready_map := '0';
             for i in 0 to DATA_MEM_LEN - 1 loop
-                data_mem(i) := i;
+                data_mem(i) := i + 4;
             end loop;
         ELSIF (rising_edge(clk)) THEN
             ready_map := '0';

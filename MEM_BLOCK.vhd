@@ -44,16 +44,15 @@ ARCHITECTURE rtl OF MEM_BLOCK IS
 		);
 	END component REGISTERS;
 
-    signal result : STD_LOGIC_VECTOR(3 DOWNTO 0);
     signal adres : STD_LOGIC_VECTOR(3 DOWNTO 0);
-    
-    signal result_regs : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    signal adres_regs : STD_LOGIC_VECTOR(7 DOWNTO 0);
-
-    signal memory_data_ready : std_logic;
-    signal registers_data_ready : std_logic;
     signal question_memory : std_logic;
+    signal result : STD_LOGIC_VECTOR(3 DOWNTO 0);
+    signal memory_data_ready : std_logic;
+    
+    signal adres_regs : STD_LOGIC_VECTOR(7 DOWNTO 0);
     signal question_registers : std_logic;
+    signal result_regs : STD_LOGIC_VECTOR(7 DOWNTO 0);
+    signal registers_data_ready : std_logic;
 
 BEGIN
 	myMEMORY : MEMORY port map (
@@ -75,7 +74,6 @@ BEGIN
     );
 
 	mem_main : PROCESS (clk, rst)
-        variable ready : std_logic;
 		-- id/exe
         VARIABLE valid_map : STD_LOGIC;
         VARIABLE ready_map : STD_LOGIC;
@@ -83,6 +81,8 @@ BEGIN
 		variable sub_data : STD_LOGIC_VECTOR(1 DOWNTO 0); -- 0 - regs 1 - memory
         -- memory / registers
 
+        -- check flag
+        variable ready : std_logic;
 	BEGIN
         IF (rst = '1') THEN
             ready := '0';
@@ -109,9 +109,6 @@ BEGIN
             END IF;
             
             IF valid_map = '0' AND ready_r = '1' and ready = '1' and (memory_data_ready = '1' or registers_data_ready = '1') THEN
-                instruction_out <= instruction_in;
-                sub_data_out <= sub_data;
-                data_out <= data;
                 if sub_data = "10" OR sub_data = "01" then -- Load and Store
                     load_adr <= data(3 downto 0);
                     data(7 downto 4) := result;
@@ -119,6 +116,9 @@ BEGIN
                     load_adr <= data(7 downto 4);
                     data := result_regs;
                 end if;
+                instruction_out <= instruction_in;
+                sub_data_out <= sub_data;
+                data_out <= data;
                 question_memory <= '0';
                 question_registers <= '0';
                 valid_map := '1';

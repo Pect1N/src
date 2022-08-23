@@ -26,7 +26,7 @@ BEGIN
         IF (rst = '1') THEN
             ready_map := '0';
             for i in 0 to REG_NUM - 1 loop
-                registers(i) := 10;
+                registers(i) := i + 10;
             end loop;
         ELSIF (rising_edge(clk)) THEN
             ready_map := '0';
