@@ -12,7 +12,7 @@ ENTITY EXP_BLOCK IS
 		valid_r : IN STD_LOGIC;
 		ready_r : IN STD_LOGIC;
 		data_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-		data_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+		data_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
 		instruction_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		sub_data_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		sub_data_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
@@ -54,19 +54,18 @@ BEGIN
 				instr := instruction_in;
 				arg1 := to_integer(unsigned(data(7 downto 4)));
 				arg2 := to_integer(unsigned(data(3 downto 0)));
-				if instr = "10" then
-					arg1 := arg1 + arg2;
-					data(7 downto 4) := std_logic_vector(to_signed(arg1, 4));
-				elsif instr = "01" then
-					arg1 := arg1 * arg2;
-					data(7 downto 4) := std_logic_vector(to_signed(arg1, 4));
-				end if;
 			END IF;
 
 			IF valid_map = '0' AND ready_r = '1' and ready = '1' THEN
 				sub_data_out <= sub_data_in;
 				load_adr_out <= load_adr_in;
-				data_out <= data;
+				-- check realization in ALU (problems with diapazons)
+				if instr = "10" then
+					arg1 := arg1 + arg2;
+				elsif instr = "01" then
+					arg1 := arg1 * arg2;
+				end if;
+				data_out <= std_logic_vector(to_signed(arg1, 4));
 				valid_map := '1';
 				ready_map := '1';
 			END IF;

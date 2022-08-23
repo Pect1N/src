@@ -7,9 +7,9 @@ ENTITY REGISTERS IS
 	PORT (
 		clk : IN STD_LOGIC;
 		rst : IN STD_LOGIC;
-        flag : in std_logic;
+        flag : IN std_logic;
         ready : OUT std_logic;
-        read_mem : IN STD_LOGIC_VECTOR(7 DOWNTO 0); -- element adres (read)
+        read_reg : IN STD_LOGIC_VECTOR(7 DOWNTO 0); -- element adres (read)
         regs_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0) -- element value (read)
 	);
 END REGISTERS;
@@ -31,11 +31,13 @@ BEGIN
         ELSIF (rising_edge(clk)) THEN
             ready_map := '0';
             if flag = '1' then
-                index := to_integer(unsigned(read_mem(7 downto 4)));
+                index := to_integer(unsigned(read_reg(7 downto 4)));
                 regs_out(7 downto 4) <= std_logic_vector(to_unsigned(registers(index), 4));
-                index := to_integer(unsigned(read_mem(3 downto 0)));
+                index := to_integer(unsigned(read_reg(3 downto 0)));
                 regs_out(3 downto 0) <= std_logic_vector(to_unsigned(registers(index), 4));
+                ready_map := '1';
             end if;
+            ready <= ready_map;
         END IF;
     END PROCESS; -- main
 END rtl; -- rtl

@@ -7,7 +7,7 @@ ENTITY MEMORY IS
 	PORT (
 		clk : IN STD_LOGIC;
 		rst : IN STD_LOGIC;
-        flag : in std_logic;
+        flag : IN std_logic;
         ready : OUT std_logic;
         read_mem : IN STD_LOGIC_VECTOR(3 DOWNTO 0); -- element adres (read)
         mem_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0) -- element value (read)

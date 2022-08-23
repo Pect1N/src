@@ -39,7 +39,7 @@ ARCHITECTURE rtl OF MEM_BLOCK IS
             rst : IN STD_LOGIC;
             flag : in std_logic;
             ready : OUT std_logic;
-            read_mem : IN STD_LOGIC_VECTOR(7 DOWNTO 0); -- element adres (read)
+            read_reg : IN STD_LOGIC_VECTOR(7 DOWNTO 0); -- element adres (read)
             regs_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0) -- element value (read)
 		);
 	END component REGISTERS;
@@ -69,7 +69,7 @@ BEGIN
         rst => rst,
         flag => question_registers,
         ready => registers_data_ready,
-        read_mem => adres_regs,
+        read_reg => adres_regs,
         regs_out => result_regs
     );
 
@@ -102,14 +102,17 @@ BEGIN
                 ready := '1';
                 data := data_in;--forming write data
 				sub_data := sub_data_in;
-                adres <= data(7 downto 4);
-                adres_regs <= data;
-                question_memory <= '1';
-                question_registers <= '1';
+                if sub_data = "10" then
+                    adres <= data(7 downto 4);
+                    question_memory <= '1';
+                elsif sub_data = "00" or sub_data = "01" then
+                    adres_regs <= data;
+                    question_registers <= '1';
+                end if;
             END IF;
             
             IF valid_map = '0' AND ready_r = '1' and ready = '1' and (memory_data_ready = '1' or registers_data_ready = '1') THEN
-                if sub_data = "10" OR sub_data = "01" then -- Load and Store
+                if sub_data = "10" then -- Load and Store
                     load_adr <= data(3 downto 0);
                     data(7 downto 4) := result;
                 else -- Expression
