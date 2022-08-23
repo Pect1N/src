@@ -5,78 +5,78 @@ USE ieee.numeric_std.ALL;
 
 ENTITY conv IS
     PORT (
-        clk : IN STD_LOGIC;
-        rst : IN STD_LOGIC;
-        valid_test : IN STD_LOGIC;
-        ready_if : OUT STD_LOGIC;
-        data : IN STD_LOGIC_VECTOR(9 DOWNTO 0)
+        clk         : IN STD_LOGIC;
+        rst         : IN STD_LOGIC;
+        valid_test  : IN STD_LOGIC;
+        data        : IN STD_LOGIC_VECTOR(9 DOWNTO 0)
+        ready_if    : OUT STD_LOGIC
     );
 END ENTITY conv;
 
 ARCHITECTURE doing OF conv IS
     COMPONENT IF_BLOCK IS
         PORT (
-            clk : IN STD_LOGIC;
-            rst : IN STD_LOGIC;
-            valid_r : IN STD_LOGIC;
-            ready_w : OUT STD_LOGIC;
-            data_in : IN STD_LOGIC_VECTOR(9 DOWNTO 0);
-            ready_r : IN STD_LOGIC;
-            valid_w : OUT STD_LOGIC;
-            data_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+            clk         : IN STD_LOGIC;
+            rst         : IN STD_LOGIC;
+            valid_r     : IN STD_LOGIC;
+            ready_r     : IN STD_LOGIC;
+            data_in     : IN STD_LOGIC_VECTOR(9 DOWNTO 0);
+            ready_w     : OUT STD_LOGIC;
+            valid_w     : OUT STD_LOGIC;
+            data_out    : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
             instruction : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
         );
     END COMPONENT;
 
     COMPONENT ID_BLOCK IS
         PORT (
-            clk : IN STD_LOGIC;
-            rst : IN STD_LOGIC;
-            valid_w : OUT STD_LOGIC;
-            ready_w : OUT STD_LOGIC;
-            valid_r : IN STD_LOGIC;
-            ready_r : IN STD_LOGIC;
-            data_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-            data_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            instruction_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+            clk             : IN STD_LOGIC;
+            rst             : IN STD_LOGIC;
+            valid_r         : IN STD_LOGIC;
+            ready_r         : IN STD_LOGIC;
+            data_in         : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+            instruction_in  : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+            ready_w         : OUT STD_LOGIC;
+            valid_w         : OUT STD_LOGIC;
+            data_out        : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
             instruction_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-            sub_data_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
+            sub_data_out    : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
         );
     END component ID_BLOCK;
 
     COMPONENT MEM_BLOCK IS
         PORT (
-            clk : IN STD_LOGIC;
-            rst : IN STD_LOGIC;
-            valid_w : OUT STD_LOGIC;
-            ready_w : OUT STD_LOGIC;
-            valid_r : IN STD_LOGIC;
-            ready_r : IN STD_LOGIC;
-            data_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-            data_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            instruction_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+            clk             : IN STD_LOGIC;
+            rst             : IN STD_LOGIC;
+            valid_r         : IN STD_LOGIC;
+            ready_r         : IN STD_LOGIC;
+            data_in         : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+            instruction_in  : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+            sub_data_in     : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+            ready_w         : OUT STD_LOGIC;
+            valid_w         : OUT STD_LOGIC;
+            data_out        : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
             instruction_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-            sub_data_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-            sub_data_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-            load_adr : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+            sub_data_out    : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+            load_adr        : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
         );
     END component MEM_BLOCK;
 
     COMPONENT EXP_BLOCK IS
         PORT (
-            clk : IN STD_LOGIC;
-            rst : IN STD_LOGIC;
-            valid_w : OUT STD_LOGIC;
-            ready_w : OUT STD_LOGIC;
-            valid_r : IN STD_LOGIC;
-            ready_r : IN STD_LOGIC;
-            data_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-            data_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-            instruction_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-            sub_data_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-            sub_data_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-            load_adr_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-            load_adr_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+            clk             : IN STD_LOGIC;
+            rst             : IN STD_LOGIC;
+            valid_r         : IN STD_LOGIC;
+            ready_r         : IN STD_LOGIC;
+            data_in         : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+            instruction_in  : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+            sub_data_in     : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+            load_adr_in     : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+            ready_w         : OUT STD_LOGIC;
+            valid_w         : OUT STD_LOGIC;
+            data_out        : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+            sub_data_out    : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+            load_adr_out    : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
         );
     END component EXP_BLOCK;
 
