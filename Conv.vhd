@@ -6,21 +6,15 @@ USE ieee.numeric_std.ALL;
 ENTITY conv IS
     PORT (
         clk : IN STD_LOGIC;
-        rst : IN STD_LOGIC
+        rst : IN STD_LOGIC;
+        valid_test : IN STD_LOGIC;
+        ready_if : OUT STD_LOGIC;
+        data : IN STD_LOGIC_VECTOR(9 DOWNTO 0)
     );
 END ENTITY conv;
 
-ARCHITECTURE doing OF conv IS
-    COMPONENT test IS
-        PORT (
-            clk : OUT STD_LOGIC;
-            rst : OUT STD_LOGIC;
-            valid_w : OUT STD_LOGIC;
-            data_out : OUT STD_LOGIC_VECTOR(9 DOWNTO 0);
-            ready_r : IN STD_LOGIC
-        );
-    END COMPONENT;
 
+ARCHITECTURE doing OF conv IS
     COMPONENT IF_BLOCK IS
         PORT (
             clk         : IN STD_LOGIC;
@@ -106,22 +100,16 @@ ARCHITECTURE doing OF conv IS
         );
     END component REG;
 
-    signal clk_q : std_logic;
-    signal rst_q : std_logic;
-
-    signal valid_test_if : std_logic;
     signal valid_if_id : std_logic;
     signal valid_id_mem : std_logic;
     signal valid_mem_exp : std_logic;
     signal valid_exp_wr : std_logic;
 
-    signal ready_if_test : std_logic;
     signal ready_id_if : std_logic;
     signal ready_mem_id : std_logic;
     signal ready_exp_mem : std_logic;
     signal ready_wr_exp : std_logic;
 
-    signal data_test_if : STD_LOGIC_VECTOR(9 DOWNTO 0);
     signal data_if_id : STD_LOGIC_VECTOR(7 DOWNTO 0);
     signal data_id_mem : STD_LOGIC_VECTOR(7 DOWNTO 0);
     signal data_mem_exp : STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -139,20 +127,13 @@ ARCHITECTURE doing OF conv IS
     signal load_adres_exp_wr : STD_LOGIC_VECTOR(3 DOWNTO 0);
 
 BEGIN
-    myTEST : test port map (
-        clk => clk_q,
-        rst => rst_q,
-        valid_w => valid_test_if,
-        ready_r => ready_if_test,
-        data_out => data_test_if
-    );
     myIF : IF_BLOCK port map (
         clk => clk,
         rst => rst,
         -- connect test
-        valid_r => valid_test_if,
-        ready_w => ready_if_test,
-        data_in => data_test_if,
+        valid_r => valid_test,
+        ready_w => ready_if,
+        data_in => data,
         -- connect id
         ready_r => ready_id_if,
         valid_w => valid_if_id,
