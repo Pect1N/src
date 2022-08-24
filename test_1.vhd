@@ -8,64 +8,55 @@ ENTITY test IS
     (
         TICK : time := 200 ns
     );
+    PORT (
+		clk : OUT STD_LOGIC;
+		rst : OUT STD_LOGIC;
+        valid_w : OUT STD_LOGIC;
+        data_out : OUT STD_LOGIC_VECTOR(9 DOWNTO 0);
+        ready_r : IN STD_LOGIC
+	);
 END ENTITY test;
 
 ARCHITECTURE main OF test IS
-    COMPONENT conv IS
-        PORT
-        (
-            clk         : IN STD_LOGIC;
-            rst         : IN STD_LOGIC;
-            valid_test  : IN STD_LOGIC;
-            data        : IN STD_LOGIC_VECTOR(9 DOWNTO 0);
-            ready_if    : OUT STD_LOGIC
-        );
-    END COMPONENT conv;
 
-    signal clk              : std_logic := '0';
-    signal rst              : std_logic := '0';
-    signal test_completed   : boolean := false;
+    signal clk_map : std_logic := '0';
+    signal rst_map : std_logic := '0';
+    signal test_completed : boolean := false;
 
-    signal valid_w  : std_logic := '0';
-    signal ready_r  : std_logic;
-    signal data_out : std_logic_vector(9 DOWNTO 0);
+    signal valid_w_map : std_logic := '0';
+    signal ready_r_map : std_logic;
+    signal data_out_map : std_logic_vector(9 DOWNTO 0);
     
 BEGIN
-    funct : conv port map (
-        clk => clk,
-        rst => rst,
-        valid_test => valid_w,
-        ready_if => ready_r,
-        data => data_out
-    );
-
     reset: PROCESS
     BEGIN
-        rst <= '1', '0' after TICK;
+        rst_map <= '1', '0' after TICK;
+        rst <= rst_map;
         wait;
     END PROCESS reset;
 
-    clock : PROCESS(clk)
+    clock : PROCESS(clk_map)
     BEGIN
         if test_completed = false then
-            if rst = '1' then
-                clk <= '0';
-            elsif clk = '1' then
-                clk <= '0' after TICK;
+            if rst_map = '1' then
+                clk_map <= '0';
+            elsif clk_map = '1' then
+                clk_map <= '0' after TICK;
             else
-                clk <= '1' after TICK;
+                clk_map <= '1' after TICK;
             end if;
+            clk <= clk_map;
         end if;
     END PROCESS clock;
 
-    test_iterator : PROCESS(clk, rst)
+    test_iterator : PROCESS(clk_map, rst_map)
         type mem is array (integer range<>) of std_logic_vector(9 DOWNTO 0);
 
         variable valid_map  : std_logic;
         variable position   : integer;
         variable com_mem    : mem(19 DOWNTO 0); -- 00 code 0000 arg1 0000 arg2
     begin
-        if rst = '1' then
+        if rst_map = '1' then
             position := 0;
             valid_map := '0';
             valid_w <= '0';
@@ -89,12 +80,12 @@ BEGIN
             com_mem(17) := "0000010001";
             com_mem(18) := "0000100010";
             com_mem(19) := "0000110011";
-        elsif rising_edge(clk) then
-            if valid_w = '1' and ready_r = '1' then
+        elsif rising_edge(clk_map) then
+            if valid_map = '1' and ready_r = '1' then
                 valid_map := '0';
             end if;
 
-            if valid_w = '0' and ready_r = '1' then
+            if valid_map = '0' and ready_r = '1' then
                 valid_map := '1';
                 data_out <= com_mem(position);
                 position := position + 1;
