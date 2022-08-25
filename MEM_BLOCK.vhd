@@ -17,62 +17,23 @@ ENTITY MEM_BLOCK IS
 		instruction_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
 		sub_data_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
 		sub_data_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-        load_adr : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+        load_adr : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+        -- memory
+        adres_memory : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+        memory_data : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+        question_memory : OUT STD_LOGIC;
+        memory_data_ready : IN STD_LOGIC;
+        -- registers
+        adres_registers : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+        registers_data : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+        question_registers : OUT STD_LOGIC;
+        registers_data_ready : IN STD_LOGIC
 	);
 END MEM_BLOCK;
 
 ARCHITECTURE rtl OF MEM_BLOCK IS
-	COMPONENT MEMORY IS
-		PORT (
-            clk : IN STD_LOGIC;
-            rst : IN STD_LOGIC;
-            flag : in std_logic;
-            ready : OUT std_logic;
-            read_mem : IN STD_LOGIC_VECTOR(3 DOWNTO 0); -- element adres (read)
-            mem_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0) -- element value (read)
-		);
-	END component MEMORY;
-
-	COMPONENT REGISTERS IS
-		PORT (
-            clk : IN STD_LOGIC;
-            rst : IN STD_LOGIC;
-            flag : in std_logic;
-            ready : OUT std_logic;
-            read_reg : IN STD_LOGIC_VECTOR(7 DOWNTO 0); -- element adres (read)
-            regs_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0) -- element value (read)
-		);
-	END component REGISTERS;
-
-    signal adres : STD_LOGIC_VECTOR(3 DOWNTO 0);
-    signal question_memory : std_logic;
-    signal result : STD_LOGIC_VECTOR(3 DOWNTO 0);
-    signal memory_data_ready : std_logic;
-    
-    signal adres_regs : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    signal question_registers : std_logic;
-    signal result_regs : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    signal registers_data_ready : std_logic;
 
 BEGIN
-	myMEMORY : MEMORY port map (
-        clk => clk,
-        rst => rst,
-        flag => question_memory,
-        ready => memory_data_ready,
-        read_mem => adres,
-        mem_out => result
-    );
-
-    myREGISTERS : REGISTERS port map (
-        clk => clk,
-        rst => rst,
-        flag => question_registers,
-        ready => registers_data_ready,
-        read_reg => adres_regs,
-        regs_out => result_regs
-    );
-
 	mem_main : PROCESS (clk, rst)
 		-- id/exe
         VARIABLE valid_map : STD_LOGIC;
@@ -103,10 +64,10 @@ BEGIN
                 data := data_in;--forming write data
 				sub_data := sub_data_in;
                 if sub_data = "10" then
-                    adres <= data(7 downto 4);
+                    adres_memory <= data(7 downto 4);
                     question_memory <= '1';
                 elsif sub_data = "00" or sub_data = "01" then
-                    adres_regs <= data;
+                    adres_registers <= data;
                     question_registers <= '1';
                 end if;
             END IF;
@@ -114,10 +75,10 @@ BEGIN
             IF valid_map = '0' AND ready_r = '1' and ready = '1' and (memory_data_ready = '1' or registers_data_ready = '1') THEN
                 if sub_data = "10" then -- Load and Store
                     load_adr <= data(3 downto 0);
-                    data(7 downto 4) := result;
+                    data(7 downto 4) := memory_data;
                 else -- Expression
                     load_adr <= data(7 downto 4);
-                    data := result_regs;
+                    data := registers_data;
                 end if;
                 instruction_out <= instruction_in;
                 sub_data_out <= sub_data;
