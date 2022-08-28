@@ -10,7 +10,7 @@ ENTITY conv IS
         -- connect if
         valid_test : IN STD_LOGIC;
         ready_if : OUT STD_LOGIC;
-        data : IN STD_LOGIC_VECTOR(9 DOWNTO 0);
+        data : IN STD_LOGIC_VECTOR(10 DOWNTO 0);
         -- connect memory/mem
         adres_mem_memory : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
         data_memory_mem : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
@@ -31,11 +31,11 @@ ARCHITECTURE doing OF conv IS
             rst         : IN STD_LOGIC;
             valid_r     : IN STD_LOGIC;
             ready_r     : IN STD_LOGIC;
-            data_in     : IN STD_LOGIC_VECTOR(9 DOWNTO 0);
+            data_in     : IN STD_LOGIC_VECTOR(10 DOWNTO 0);
             ready_w     : OUT STD_LOGIC;
             valid_w     : OUT STD_LOGIC;
             data_out    : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            instruction : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
+            instruction : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
         );
     END COMPONENT;
 
@@ -46,11 +46,11 @@ ARCHITECTURE doing OF conv IS
             valid_r         : IN STD_LOGIC;
             ready_r         : IN STD_LOGIC;
             data_in         : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-            instruction_in  : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+            instruction_in  : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
             ready_w         : OUT STD_LOGIC;
             valid_w         : OUT STD_LOGIC;
             data_out        : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            instruction_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+            instruction_out : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
             sub_data_out    : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
         );
     END component ID_BLOCK;
@@ -65,8 +65,8 @@ ARCHITECTURE doing OF conv IS
             ready_r : IN STD_LOGIC;
             data_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
             data_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            instruction_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-            instruction_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+            instruction_in : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+            instruction_out : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
             sub_data_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
             sub_data_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
             load_adr : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
@@ -90,14 +90,15 @@ ARCHITECTURE doing OF conv IS
             valid_r         : IN STD_LOGIC;
             ready_r         : IN STD_LOGIC;
             data_in         : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-            instruction_in  : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+            instruction_in  : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
             sub_data_in     : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
             load_adr_in     : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
             ready_w         : OUT STD_LOGIC;
             valid_w         : OUT STD_LOGIC;
             data_out        : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
             sub_data_out    : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-            load_adr_out    : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+            load_adr_out    : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+            Overflow : OUT STD_LOGIC
         );
     END component EXP_BLOCK;
 
@@ -153,9 +154,9 @@ ARCHITECTURE doing OF conv IS
     signal data_mem_exp : STD_LOGIC_VECTOR(7 DOWNTO 0);
     signal data_exp_wr : STD_LOGIC_VECTOR(3 DOWNTO 0);
 
-    signal instruction_if_id : STD_LOGIC_VECTOR(1 DOWNTO 0);
-    signal instruction_id_mem : STD_LOGIC_VECTOR(1 DOWNTO 0);
-    signal instruction_mem_exp : STD_LOGIC_VECTOR(1 DOWNTO 0);
+    signal instruction_if_id : STD_LOGIC_VECTOR(2 DOWNTO 0);
+    signal instruction_id_mem : STD_LOGIC_VECTOR(2 DOWNTO 0);
+    signal instruction_mem_exp : STD_LOGIC_VECTOR(2 DOWNTO 0);
 
     signal sub_data_id_mem : STD_LOGIC_VECTOR(1 DOWNTO 0);
     signal sub_data_mem_exp : STD_LOGIC_VECTOR(1 DOWNTO 0);
@@ -173,6 +174,8 @@ ARCHITECTURE doing OF conv IS
     signal data_wr_registers : STD_LOGIC_VECTOR(3 DOWNTO 0);
     signal question_wr_registers : STD_LOGIC;
     signal data_ready_registers_wr : STD_LOGIC;
+
+    signal overflow_add : STD_LOGIC;
 
 BEGIN
     myIF : IF_BLOCK port map (
@@ -233,6 +236,7 @@ BEGIN
     myEXP : EXP_BLOCK port map (
         clk => clk,
         rst => rst,
+        Overflow => overflow_add,
         -- connect mem
         ready_w => ready_exp_mem,
         valid_r => valid_mem_exp,

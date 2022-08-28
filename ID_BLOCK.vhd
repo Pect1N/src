@@ -13,8 +13,8 @@ ENTITY ID_BLOCK IS
         ready_r : IN STD_LOGIC;
         data_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         data_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-        instruction_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-        instruction_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+        instruction_in : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+        instruction_out : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
         sub_data_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
     );
 END ID_BLOCK;
@@ -26,7 +26,7 @@ BEGIN
         VARIABLE valid_map : STD_LOGIC;
         VARIABLE ready_map : STD_LOGIC;
         VARIABLE data : STD_LOGIC_VECTOR(7 DOWNTO 0);
-        variable instr : STD_LOGIC_VECTOR(1 DOWNTO 0);
+        variable instr : STD_LOGIC_VECTOR(2 DOWNTO 0);
         variable sub_data : STD_LOGIC_VECTOR(1 DOWNTO 0); -- 0 - regs 1 - memory
         -- check flag
         variable ready : std_logic;
@@ -50,14 +50,16 @@ BEGIN
                 data := data_in;--forming write data
                 instr := instruction_in;
                 -- Load
-                if instr = "11" then
+                if instr = "111" then
                     sub_data := "10";
                 -- Store
-                elsif instr = "00" then
+                elsif instr = "100" then
                     sub_data := "01";
                 -- Math
-                else
+                elsif instr = "101" or instr = "110" then
                     sub_data := "00";
+                else -- nop
+                    sub_data := "11";
                 end if;
             END IF;
             

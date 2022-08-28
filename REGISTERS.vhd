@@ -19,7 +19,7 @@ ENTITY REGISTERS IS
 END REGISTERS;
 
 ARCHITECTURE rtl OF REGISTERS IS
-    constant REG_NUM : integer := 4;
+    constant REG_NUM : integer := 16;
     type mas is array(integer range <>) of integer;
 BEGIN
     registers_main : PROCESS (clk, rst)
