@@ -177,6 +177,9 @@ ARCHITECTURE doing OF conv IS
 
     signal overflow_add : STD_LOGIC;
 
+    constant REG_NUM : integer := 16;
+    type mas is array(integer range <>) of integer;
+
 BEGIN
     myIF : IF_BLOCK port map (
         clk => clk,
@@ -285,4 +288,5 @@ BEGIN
         flag_wr => question_wr_registers,
         data_ready_wr => data_ready_registers_wr
     );
+
 END ARCHITECTURE doing;

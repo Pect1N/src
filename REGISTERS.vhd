@@ -14,14 +14,22 @@ ENTITY REGISTERS IS
         adres_wr : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
         data_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0); -- data from WR
         flag_wr : IN std_logic;
-        data_ready_wr : OUT std_logic
+        reg_rd : out std_logic_vector(32*16 - 1 downto 0) ;
+        reg_wr : in std_logic_vector(32*16 - 1 downto 0) ;
+                data_ready_wr : OUT std_logic
 	);
 END REGISTERS;
 
 ARCHITECTURE rtl OF REGISTERS IS
     constant REG_NUM : integer := 16;
     type mas is array(integer range <>) of integer;
+    signal reg : std_logic_vector(16*32 - 1 downto 0) ;
 BEGIN
+    reg <= reg_wr;
+    reg_rd <= reg;
+
+
+
     registers_main : PROCESS (clk, rst)
         variable registers : mas(REG_NUM - 1 downto 0);
         variable index : INTEGER;
