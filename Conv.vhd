@@ -4,181 +4,186 @@ USE ieee.std_logic_unsigned.ALL;
 USE ieee.numeric_std.ALL;
 
 ENTITY conv IS
+    generic
+    (
+        INSTR_LEN       : INTEGER := 3;
+        LEN             : INTEGER := 16;
+        DATA_LEN        : INTEGER := 3 + 16 + 16; -- INSTR_LEN + LEN + LEN
+        SUB_DATA_LEN    : INTEGER := 2;
+        REG_MEM_LEN     : INTEGER := 16
+    );
     PORT (
-        clk : IN STD_LOGIC;
-        rst : IN STD_LOGIC;
+        clk                     : IN    STD_LOGIC;
+        rst                     : IN    STD_LOGIC;
         -- connect if
-        valid_test : IN STD_LOGIC;
-        ready_if : OUT STD_LOGIC;
-        data : IN STD_LOGIC_VECTOR(10 DOWNTO 0);
+        valid_test              : IN    STD_LOGIC;
+        ready_if                : OUT   STD_LOGIC;
+        data                    : IN    STD_LOGIC_VECTOR(DATA_LEN - 1 DOWNTO 0);
         -- connect memory/mem
-        adres_mem_memory : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-        data_memory_mem : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-        question_mem_memory : OUT STD_LOGIC;
-        data_ready_memory_mem : IN STD_LOGIC;
+        adres_mem_memory        : OUT   STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+        data_memory_mem         : IN    STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+        question_mem_memory     : OUT   STD_LOGIC;
+        data_ready_memory_mem   : IN    STD_LOGIC;
         -- connect memory/wr
-        adres_wr_memory : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-        data_memory_wr : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-        question_wr_memory : OUT STD_LOGIC;
-        data_ready_memory_wr : IN STD_LOGIC
+        adres_wr_memory         : OUT   STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+        data_memory_wr          : OUT   STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+        question_wr_memory      : OUT   STD_LOGIC;
+        data_ready_memory_wr    : IN    STD_LOGIC
     );
 END ENTITY conv;
 
 ARCHITECTURE doing OF conv IS
     COMPONENT IF_BLOCK IS
         PORT (
-            clk         : IN STD_LOGIC;
-            rst         : IN STD_LOGIC;
-            valid_r     : IN STD_LOGIC;
-            ready_r     : IN STD_LOGIC;
-            data_in     : IN STD_LOGIC_VECTOR(10 DOWNTO 0);
-            ready_w     : OUT STD_LOGIC;
-            valid_w     : OUT STD_LOGIC;
-            data_out    : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            instruction : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
+            clk         : IN    STD_LOGIC;
+            rst         : IN    STD_LOGIC;
+            -- test
+            valid_r     : IN    STD_LOGIC;
+            data_in     : IN    STD_LOGIC_VECTOR(DATA_LEN - 1 DOWNTO 0);
+            ready_w     : OUT   STD_LOGIC;
+            -- ID
+            ready_r     : IN    STD_LOGIC;
+            valid_w     : OUT   STD_LOGIC;
+            data_out    : OUT   STD_LOGIC_VECTOR(LEN + LEN - 1 DOWNTO 0);
+            instruction : OUT   STD_LOGIC_VECTOR(INSTR_LEN - 1 DOWNTO 0)
         );
     END COMPONENT;
 
     COMPONENT ID_BLOCK IS
         PORT (
-            clk             : IN STD_LOGIC;
-            rst             : IN STD_LOGIC;
-            valid_r         : IN STD_LOGIC;
-            ready_r         : IN STD_LOGIC;
-            data_in         : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-            instruction_in  : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
-            ready_w         : OUT STD_LOGIC;
-            valid_w         : OUT STD_LOGIC;
-            data_out        : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            instruction_out : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-            sub_data_out    : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
+            clk             : IN    STD_LOGIC;
+            rst             : IN    STD_LOGIC;
+            -- IF
+            valid_r         : IN    STD_LOGIC;
+            data_in         : IN    STD_LOGIC_VECTOR(LEN + LEN - 1 DOWNTO 0);
+            instruction_in  : IN    STD_LOGIC_VECTOR(INSTR_LEN - 1 DOWNTO 0);
+            ready_w         : OUT   STD_LOGIC;
+            -- MEM
+            ready_r         : IN    STD_LOGIC;
+            valid_w         : OUT   STD_LOGIC;
+            data_out        : OUT   STD_LOGIC_VECTOR(LEN + LEN - 1 DOWNTO 0);
+            instruction_out : OUT   STD_LOGIC_VECTOR(INSTR_LEN - 1 DOWNTO 0);
+            sub_data_out    : OUT   STD_LOGIC_VECTOR(SUB_DATA_LEN - 1 DOWNTO 0)
         );
     END component ID_BLOCK;
 
     COMPONENT MEM_BLOCK IS
         PORT (
-            clk : IN STD_LOGIC;
-            rst : IN STD_LOGIC;
-            valid_w : OUT STD_LOGIC;
-            ready_w : OUT STD_LOGIC;
-            valid_r : IN STD_LOGIC;
-            ready_r : IN STD_LOGIC;
-            data_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-            data_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            instruction_in : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
-            instruction_out : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-            sub_data_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-            sub_data_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-            load_adr : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-            -- memory
-            adres_memory : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-            memory_data : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-            question_memory : OUT STD_LOGIC;
-            memory_data_ready : IN STD_LOGIC;
+            clk                 : IN    STD_LOGIC;
+            rst                 : IN    STD_LOGIC;
+            -- ID   
+            valid_r             : IN    STD_LOGIC;
+            data_in             : IN    STD_LOGIC_VECTOR(LEN + LEN - 1 DOWNTO 0);
+            instruction_in      : IN    STD_LOGIC_VECTOR(INSTR_LEN - 1 DOWNTO 0);
+            sub_data_in         : IN    STD_LOGIC_VECTOR(SUB_DATA_LEN - 1 DOWNTO 0);
+            ready_w             : OUT   STD_LOGIC;
+            -- EXP
+            ready_r             : IN    STD_LOGIC;
+            valid_w             : OUT   STD_LOGIC;
+            data_out            : OUT   STD_LOGIC_VECTOR(LEN + LEN - 1 DOWNTO 0);
+            instruction_out     : OUT   STD_LOGIC_VECTOR(INSTR_LEN - 1 DOWNTO 0);
+            sub_data_out        : OUT   STD_LOGIC_VECTOR(SUB_DATA_LEN - 1 DOWNTO 0);
+            load_adr            : OUT   STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+            -- memory   
+            memory_data         : IN    STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+            memory_data_ready   : IN    STD_LOGIC;
+            adres_memory        : OUT   STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+            question_memory     : OUT   STD_LOGIC;
             -- registers
-            adres_registers : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-            registers_data : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-            question_registers : OUT STD_LOGIC;
-            registers_data_ready : IN STD_LOGIC
+            registers_data      : IN    STD_LOGIC_VECTOR(LEN * REG_MEM_LEN - 1 DOWNTO 0)
         );
     END component MEM_BLOCK;
 
     COMPONENT EXP_BLOCK IS
         PORT (
-            clk             : IN STD_LOGIC;
-            rst             : IN STD_LOGIC;
-            valid_r         : IN STD_LOGIC;
-            ready_r         : IN STD_LOGIC;
-            data_in         : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-            instruction_in  : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
-            sub_data_in     : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-            load_adr_in     : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-            ready_w         : OUT STD_LOGIC;
-            valid_w         : OUT STD_LOGIC;
-            data_out        : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-            sub_data_out    : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-            load_adr_out    : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-            Overflow : OUT STD_LOGIC
+            clk 			: IN 	STD_LOGIC;
+            rst 			: IN 	STD_LOGIC;
+            Overflow 		: OUT 	STD_LOGIC;
+            -- MEM
+            valid_r 		: IN 	STD_LOGIC;
+            data_in 		: IN 	STD_LOGIC_VECTOR(LEN + LEN - 1 DOWNTO 0);
+            instruction_in 	: IN 	STD_LOGIC_VECTOR(INSTR_LEN - 1 DOWNTO 0);
+            sub_data_in 	: IN 	STD_LOGIC_VECTOR(SUB_DATA_LEN - 1 DOWNTO 0);
+            load_adr_in 	: IN 	STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+            ready_w 		: OUT 	STD_LOGIC;
+            -- WR
+            ready_r 		: IN 	STD_LOGIC;
+            valid_w 		: OUT 	STD_LOGIC;
+            data_out 		: OUT 	STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+            sub_data_out 	: OUT 	STD_LOGIC_VECTOR(SUB_DATA_LEN - 1 DOWNTO 0);
+            load_adr_out 	: OUT 	STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0)
         );
     END component EXP_BLOCK;
 
     COMPONENT WR_BLOCK IS
         PORT (
-            clk : IN STD_LOGIC;
-            rst : IN STD_LOGIC;
-            ready_w : OUT STD_LOGIC;
-            valid_r : IN STD_LOGIC;
-            data_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-            sub_data_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-            load_adr_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+            clk 				: IN 	STD_LOGIC;
+            rst 				: IN 	STD_LOGIC;
+            -- EXP
+            valid_r 			: IN 	STD_LOGIC;
+            data_in 			: IN 	STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+            sub_data_in 		: IN 	STD_LOGIC_VECTOR(SUB_DATA_LEN - 1 DOWNTO 0);
+            load_adr_in 		: IN 	STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+            ready_w 			: OUT 	STD_LOGIC;
             -- memory
-            adres_memory : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-            memory_data : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-            question_memory : OUT STD_LOGIC;
-            memory_data_ready : IN STD_LOGIC;
+            memory_data_ready 	: IN 	STD_LOGIC;
+            adres_memory 		: OUT 	STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+            memory_data 		: OUT 	STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+            question_memory 	: OUT 	STD_LOGIC;
             -- registers
-            adres_registers : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-            registers_data : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-            question_registers : OUT STD_LOGIC;
-            registers_data_ready : IN STD_LOGIC
+            registers_data 		: OUT 	STD_LOGIC_VECTOR(LEN * REG_MEM_LEN - 1 DOWNTO 0)
         );
     END component WR_BLOCK;
 
     COMPONENT REGISTERS IS
         PORT (
-            clk : IN STD_LOGIC;
-            rst : IN STD_LOGIC;
-            adres_mem : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-            data_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0); -- data to MEM
-            flag_mem : IN std_logic;
-            data_ready_mem : OUT std_logic;
-            adres_wr : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-            data_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0); -- data from WR
-            flag_wr : IN std_logic;
-            data_ready_wr : OUT std_logic
+            clk     : IN    STD_LOGIC;
+            rst     : IN    STD_LOGIC;
+            reg_rd  : OUT   STD_LOGIC_VECTOR(LEN * REG_MEM_LEN - 1 DOWNTO 0);
+            reg_wr  : IN    STD_LOGIC_VECTOR(LEN * REG_MEM_LEN - 1 DOWNTO 0)
         );
     END component REGISTERS;
 
-    signal valid_if_id : std_logic;
-    signal valid_id_mem : std_logic;
-    signal valid_mem_exp : std_logic;
-    signal valid_exp_wr : std_logic;
+    signal valid_if_id      : STD_LOGIC;
+    signal valid_id_mem     : STD_LOGIC;
+    signal valid_mem_exp    : STD_LOGIC;
+    signal valid_exp_wr     : STD_LOGIC;
 
-    signal ready_id_if : std_logic;
-    signal ready_mem_id : std_logic;
-    signal ready_exp_mem : std_logic;
-    signal ready_wr_exp : std_logic;
+    signal ready_id_if      : STD_LOGIC;
+    signal ready_mem_id     : STD_LOGIC;
+    signal ready_exp_mem    : STD_LOGIC;
+    signal ready_wr_exp     : STD_LOGIC;
 
-    signal data_if_id : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    signal data_id_mem : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    signal data_mem_exp : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    signal data_exp_wr : STD_LOGIC_VECTOR(3 DOWNTO 0);
+    signal data_if_id   : STD_LOGIC_VECTOR(LEN + LEN - 1 DOWNTO 0);
+    signal data_id_mem  : STD_LOGIC_VECTOR(LEN + LEN - 1 DOWNTO 0);
+    signal data_mem_exp : STD_LOGIC_VECTOR(LEN + LEN - 1 DOWNTO 0);
+    signal data_exp_wr  : STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
 
-    signal instruction_if_id : STD_LOGIC_VECTOR(2 DOWNTO 0);
-    signal instruction_id_mem : STD_LOGIC_VECTOR(2 DOWNTO 0);
-    signal instruction_mem_exp : STD_LOGIC_VECTOR(2 DOWNTO 0);
+    signal instruction_if_id    : STD_LOGIC_VECTOR(INSTR_LEN - 1 DOWNTO 0);
+    signal instruction_id_mem   : STD_LOGIC_VECTOR(INSTR_LEN - 1 DOWNTO 0);
+    signal instruction_mem_exp  : STD_LOGIC_VECTOR(INSTR_LEN - 1 DOWNTO 0);
 
-    signal sub_data_id_mem : STD_LOGIC_VECTOR(1 DOWNTO 0);
-    signal sub_data_mem_exp : STD_LOGIC_VECTOR(1 DOWNTO 0);
-    signal sub_data_exp_wr : STD_LOGIC_VECTOR(1 DOWNTO 0);
+    signal sub_data_id_mem  : STD_LOGIC_VECTOR(SUB_DATA_LEN - 1 DOWNTO 0);
+    signal sub_data_mem_exp : STD_LOGIC_VECTOR(SUB_DATA_LEN - 1 DOWNTO 0);
+    signal sub_data_exp_wr  : STD_LOGIC_VECTOR(SUB_DATA_LEN - 1 DOWNTO 0);
     
-    signal load_adres_mem_exp : STD_LOGIC_VECTOR(3 DOWNTO 0);
-    signal load_adres_exp_wr : STD_LOGIC_VECTOR(3 DOWNTO 0);
+    signal load_adres_mem_exp   : STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+    signal load_adres_exp_wr    : STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
 
-    signal adres_mem_registers : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    signal data_registers_mem : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    signal question_mem_registers : STD_LOGIC;
+    signal adres_mem_registers      : STD_LOGIC_VECTOR(LEN + LEN - 1 DOWNTO 0);
+    signal data_registers_mem       : STD_LOGIC_VECTOR(LEN + LEN - 1 DOWNTO 0);
+    signal question_mem_registers   : STD_LOGIC;
     signal data_ready_registers_mem : STD_LOGIC;
 
-    signal adres_wr_registers : STD_LOGIC_VECTOR(3 DOWNTO 0);
-    signal data_wr_registers : STD_LOGIC_VECTOR(3 DOWNTO 0);
-    signal question_wr_registers : STD_LOGIC;
-    signal data_ready_registers_wr : STD_LOGIC;
+    signal adres_wr_registers       : STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+    signal data_wr_registers        : STD_LOGIC_VECTOR(LEN - 1 DOWNTO 0);
+    signal question_wr_registers    : STD_LOGIC;
+    signal data_ready_registers_wr  : STD_LOGIC;
+
+    signal reg_to_mem   : STD_LOGIC_VECTOR(LEN * REG_MEM_LEN - 1 downto 0);
+    signal wr_to_reg    : STD_LOGIC_VECTOR(LEN * REG_MEM_LEN - 1 downto 0);
 
     signal overflow_add : STD_LOGIC;
-
-    constant REG_NUM : integer := 16;
-    type mas is array(integer range <>) of integer;
 
 BEGIN
     myIF : IF_BLOCK port map (
@@ -231,10 +236,7 @@ BEGIN
         question_memory => question_mem_memory,
         memory_data_ready => data_ready_memory_mem,
         -- connect registers
-        adres_registers => adres_mem_registers,
-        registers_data => data_registers_mem,
-        question_registers => question_mem_registers,
-        registers_data_ready => data_ready_registers_mem
+        registers_data => reg_to_mem
     );
     myEXP : EXP_BLOCK port map (
         clk => clk,
@@ -269,24 +271,15 @@ BEGIN
         question_memory => question_wr_memory,
         memory_data_ready => data_ready_memory_wr,
         -- connect registers
-        adres_registers => adres_wr_registers,
-        registers_data => data_wr_registers,
-        question_registers => question_wr_registers,
-        registers_data_ready => data_ready_registers_wr
+        registers_data => wr_to_reg
     );
     myREG : REGISTERS port map (
         clk => clk,
         rst => rst,
-        -- memory
-        adres_mem => adres_mem_registers,
-        data_out => data_registers_mem, -- to mem
-        flag_mem => question_mem_registers,
-        data_ready_mem => data_ready_registers_mem,
-        -- registers
-        adres_wr => adres_wr_registers,
-        data_in => data_wr_registers, -- from wr
-        flag_wr => question_wr_registers,
-        data_ready_wr => data_ready_registers_wr
+        -- mem
+        reg_rd => reg_to_mem,
+        -- wr
+        reg_wr => wr_to_reg
     );
 
 END ARCHITECTURE doing;

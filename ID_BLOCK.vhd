@@ -4,18 +4,26 @@ USE ieee.std_logic_unsigned.ALL;
 USE ieee.numeric_std.ALL;
 
 ENTITY ID_BLOCK IS
+    generic
+    (
+        INSTR_LEN       : INTEGER := 3;
+        LEN             : INTEGER := 16;
+        SUB_DATA_LEN    : INTEGER := 2
+    );
     PORT (
-        clk : IN STD_LOGIC;
-        rst : IN STD_LOGIC;
-        valid_w : OUT STD_LOGIC;
-        ready_w : OUT STD_LOGIC;
-        valid_r : IN STD_LOGIC;
-        ready_r : IN STD_LOGIC;
-        data_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-        data_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-        instruction_in : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
-        instruction_out : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-        sub_data_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
+        clk             : IN    STD_LOGIC;
+        rst             : IN    STD_LOGIC;
+        -- IF
+        valid_r         : IN    STD_LOGIC;
+        data_in         : IN    STD_LOGIC_VECTOR(LEN + LEN - 1 DOWNTO 0);
+        instruction_in  : IN    STD_LOGIC_VECTOR(INSTR_LEN - 1 DOWNTO 0);
+        ready_w         : OUT   STD_LOGIC;
+        -- MEM
+        ready_r         : IN    STD_LOGIC;
+        valid_w         : OUT   STD_LOGIC;
+        data_out        : OUT   STD_LOGIC_VECTOR(LEN + LEN - 1 DOWNTO 0);
+        instruction_out : OUT   STD_LOGIC_VECTOR(INSTR_LEN - 1 DOWNTO 0);
+        sub_data_out    : OUT   STD_LOGIC_VECTOR(SUB_DATA_LEN - 1 DOWNTO 0)
     );
 END ID_BLOCK;
 
@@ -23,13 +31,13 @@ ARCHITECTURE rtl OF ID_BLOCK IS
 
 BEGIN
     id_main : PROCESS (clk, rst)
-        VARIABLE valid_map : STD_LOGIC;
-        VARIABLE ready_map : STD_LOGIC;
-        VARIABLE data : STD_LOGIC_VECTOR(7 DOWNTO 0);
-        variable instr : STD_LOGIC_VECTOR(2 DOWNTO 0);
-        variable sub_data : STD_LOGIC_VECTOR(1 DOWNTO 0); -- 0 - regs 1 - memory
+        VARIABLE valid_map  : STD_LOGIC;
+        VARIABLE ready_map  : STD_LOGIC;
+        VARIABLE data       : STD_LOGIC_VECTOR(LEN + LEN - 1 DOWNTO 0);
+        variable instr      : STD_LOGIC_VECTOR(INSTR_LEN - 1 DOWNTO 0);
+        variable sub_data   : STD_LOGIC_VECTOR(SUB_DATA_LEN - 1 DOWNTO 0); -- 0 - regs 1 - memory
         -- check flag
-        variable ready : std_logic;
+        variable ready      : std_logic;
     BEGIN
         IF (rst = '1') THEN
             ready := '0';
